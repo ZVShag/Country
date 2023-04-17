@@ -13,9 +13,12 @@ namespace Country
 {
     public partial class Form1 : Form
     {
-        SqlConnection SqlConnection=null;
-        SqlCommandBuilder SqlCommandBuilder=null;
-        SqlDataAdapter SqlDataAdapter=null;
+        private SqlConnection SqlConnection=null;
+        private SqlCommandBuilder SqlCommandBuilder=null;
+        private SqlDataAdapter SqlDataAdapter=null;
+        private DataSet dataSet = new DataSet();
+        private bool push=false;
+        private bool newRowAdding = false;
         public Form1()
         {
             InitializeComponent();
@@ -34,15 +37,106 @@ namespace Country
 
         private void открытьToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            обновитьToolStripMenuItem.Enabled = true;
             try 
             {
-                SqlDataAdapter=new SqlDataAdapter("SELECT *,'DELETE' As [Delete] From Country",SqlConnection);
+                SqlDataAdapter=new SqlDataAdapter("SELECT *,'Delete' As [Delete] From Country",SqlConnection);
                 SqlCommandBuilder=new SqlCommandBuilder(SqlDataAdapter);
+                SqlCommandBuilder.GetDeleteCommand();
+                SqlCommandBuilder.GetInsertCommand();
+                SqlCommandBuilder.GetUpdateCommand();
+                SqlDataAdapter.Fill(dataSet,"Country");
+                dataGridView1.DataSource = dataSet.Tables["Country"];
+
+                for (int i =0;i<dataGridView1.Rows.Count; i++)
+                {
+                    DataGridViewLinkCell lnk=new DataGridViewLinkCell();
+                    dataGridView1[6, i] = lnk;
+                }
 
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message,"Error",MessageBoxButtons.OK,MessageBoxIcon.Error);
+            }
+        }
+
+        private void обновитьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            dataSet = new DataSet();
+            dataGridView1.DataSource = dataSet.Tables;
+            try 
+            {
+                
+            SqlDataAdapter.Fill(dataSet, "Country");
+            dataGridView1.DataSource = dataSet.Tables["Country"];
+
+            for (int i = 0; i < dataGridView1.Rows.Count; i++)
+            {
+                DataGridViewLinkCell lnk = new DataGridViewLinkCell();
+                dataGridView1[6, i] = lnk;
+            }
+
+        }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message,"Error",MessageBoxButtons.OK,MessageBoxIcon.Error);
+            }
+}
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            try
+            {
+                if (e.ColumnIndex == 6)
+                {
+                    string t = dataGridView1.Rows[e.RowIndex].Cells[6].Value.ToString();
+                    if (t=="Delete")
+                    {
+                        if (MessageBox.Show("Вы действительно хотите удалить строку?","Удалить",MessageBoxButtons.YesNo,MessageBoxIcon.Question) == DialogResult.Yes)
+                        {
+                            if (MessageBox.Show("Вы хотите удалить строку только в таблице?", "Удалить", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                            {
+                                int rindex = e.RowIndex;
+                                dataGridView1.Rows.RemoveAt(rindex);
+                            }
+                            else
+                            {
+                                int rindex = e.RowIndex;
+                                dataGridView1.Rows.RemoveAt(rindex);
+                                dataSet.Tables["Country"].Rows.RemoveAt(e.RowIndex);
+                                SqlDataAdapter.Update(dataSet, "Country");
+                            }
+
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message,"Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void dataGridView1_UserAddedRow(object sender, DataGridViewRowEventArgs e)
+        {
+            try 
+            {
+                if (newRowAdding==false)
+                {
+                    newRowAdding= true;
+                    int lastrow = dataGridView1.RowCount - 2;
+                    DataGridViewRow row=dataGridView1.Rows[lastrow];
+                    DataGridViewLinkCell cell=new DataGridViewLinkCell();
+                    dataGridView1[6,lastrow] = cell;
+                    row.Cells["Delete"].Value = "Insert";
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
