@@ -106,6 +106,7 @@ namespace Country
                                 dataGridView1.Rows.RemoveAt(rindex);
                                 dataSet.Tables["Country"].Rows.RemoveAt(e.RowIndex);
                                 SqlDataAdapter.Update(dataSet, "Country");
+                                //
                             }
 
                         }
