@@ -91,23 +91,24 @@ namespace Country
                 if (e.ColumnIndex == 6)
                 {
                     string t = dataGridView1.Rows[e.RowIndex].Cells[6].Value.ToString();
-                    if (t=="Delete")
+                    if (t == "Delete")
                     {
-                        if (MessageBox.Show("Вы действительно хотите удалить строку?","Удалить",MessageBoxButtons.YesNo,MessageBoxIcon.Question) == DialogResult.Yes)
+                        if (MessageBox.Show("Вы действительно хотите удалить строку?", "Удалить", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                         {
-                            if (MessageBox.Show("Вы хотите удалить строку только в таблице?", "Удалить", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-                            {
-                                int rindex = e.RowIndex;
-                                dataGridView1.Rows.RemoveAt(rindex);
-                                dataSet.Tables["Country"].Rows.RemoveAt(e.RowIndex);
-                                SqlDataAdapter.Update(dataSet, "Country");
-                                
-                            }
+
+                            int rindex = e.RowIndex;
+                            dataGridView1.Rows.RemoveAt(rindex);
+                            dataSet.Tables["Country"].Rows.RemoveAt(rindex);
+                            SqlDataAdapter.Update(dataSet, "Country");
+
+
+
+
 
                         }
                     }
                     else
-                    if (t=="Insert")
+                    if (t == "Insert")
                     {
                         int ind = dataGridView1.Rows.Count - 2;
                         DataRow row = dataSet.Tables["Country"].NewRow();
@@ -119,9 +120,22 @@ namespace Country
                         dataSet.Tables["Country"].Rows.Add(row);
                         dataSet.Tables["Country"].Rows.RemoveAt(dataSet.Tables["Country"].Rows.Count - 1);
                         dataGridView1.Rows.RemoveAt(dataGridView1.Rows.Count - 2);
-                        int z=SqlDataAdapter.Update(dataSet, "Country");
-                        MessageBox.Show("Успешно добавлено"+z.ToString()+" записей!","",MessageBoxButtons.OK);
-                        newRowAdding = false;
+                        int z = Up_dataset(dataSet, "Country");
+                        MessageBox.Show("Успешно добавлено" + z.ToString() + " записей!", "", MessageBoxButtons.OK);
+                        
+                    }
+                    else
+                    if (t == "Update")
+                    {
+                        int rind = e.RowIndex;
+                        dataSet.Tables["Country"].Rows[rind]["Name"] = dataGridView1.Rows[rind].Cells["Name"].Value;
+                        dataSet.Tables["Country"].Rows[rind]["Capital"] = dataGridView1.Rows[rind].Cells["Capital"].Value;
+                        dataSet.Tables["Country"].Rows[rind]["Population"] = dataGridView1.Rows[rind].Cells["Population"].Value;
+                        dataSet.Tables["Country"].Rows[rind]["Square"] = dataGridView1.Rows[rind].Cells["Square"].Value;
+                        dataSet.Tables["Country"].Rows[rind]["Part"] = dataGridView1.Rows[rind].Cells["Part"].Value;
+                        SqlDataAdapter.Update(dataSet, "Country");
+                        int z = SqlDataAdapter.Update(dataSet, "Country");
+                        MessageBox.Show("Успешно изменено" + z.ToString() + " записей!", "", MessageBoxButtons.OK);
                     }
                 }
             }
@@ -130,7 +144,10 @@ namespace Country
                 MessageBox.Show(ex.Message,"Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
+        private int Up_dataset(DataSet dt,string table)
+        {
+            return SqlDataAdapter.Update(dataSet, "Country");
+        }
         private void dataGridView1_UserAddedRow(object sender, DataGridViewRowEventArgs e)
         {
             try 
@@ -143,6 +160,28 @@ namespace Country
                     DataGridViewLinkCell cell=new DataGridViewLinkCell();
                     dataGridView1[6,lastrow] = cell;
                     row.Cells["Delete"].Value = "Insert";
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void dataGridView1_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            try
+            {
+                if (newRowAdding == false)
+                {
+                    
+                    int row = dataGridView1.SelectedCells[0].RowIndex;
+                    DataGridViewRow editrow = dataGridView1.Rows[row];
+                    DataGridViewLinkCell cell = new DataGridViewLinkCell();
+                    dataGridView1[6, row] = cell;
+                    editrow.Cells["Delete"].Value = "Update";
                 }
 
 
