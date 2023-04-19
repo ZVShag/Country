@@ -99,17 +99,29 @@ namespace Country
                             {
                                 int rindex = e.RowIndex;
                                 dataGridView1.Rows.RemoveAt(rindex);
-                            }
-                            else
-                            {
-                                int rindex = e.RowIndex;
-                                dataGridView1.Rows.RemoveAt(rindex);
                                 dataSet.Tables["Country"].Rows.RemoveAt(e.RowIndex);
                                 SqlDataAdapter.Update(dataSet, "Country");
-                                //
+                                
                             }
 
                         }
+                    }
+                    else
+                    if (t=="Insert")
+                    {
+                        int ind = dataGridView1.Rows.Count - 2;
+                        DataRow row = dataSet.Tables["Country"].NewRow();
+                        row["Name"] = dataGridView1.Rows[ind].Cells["Name"].Value;
+                        row["Capital"] = dataGridView1.Rows[ind].Cells["Capital"].Value;
+                        row["Population"] = dataGridView1.Rows[ind].Cells["Population"].Value;
+                        row["Square"] = dataGridView1.Rows[ind].Cells["Square"].Value;
+                        row["Part"] = dataGridView1.Rows[ind].Cells["Part"].Value;
+                        dataSet.Tables["Country"].Rows.Add(row);
+                        dataSet.Tables["Country"].Rows.RemoveAt(dataSet.Tables["Country"].Rows.Count - 1);
+                        dataGridView1.Rows.RemoveAt(dataGridView1.Rows.Count - 2);
+                        int z=SqlDataAdapter.Update(dataSet, "Country");
+                        MessageBox.Show("Успешно добавлено"+z.ToString()+" записей!","",MessageBoxButtons.OK);
+                        newRowAdding = false;
                     }
                 }
             }
